@@ -135,9 +135,15 @@ def retrieve_context(query):
 # =========================================================
 #                 FLAN-T5 LLM
 # =========================================================
+
 @st.cache_resource
 def load_llm():
-    return pipeline("text2text-generation", model="google/flan-t5-large")
+    return pipeline(
+        "text2text-generation",
+        model="google/flan-t5-base",
+        device="cpu"
+    )
+
 
 generator = load_llm()
 
