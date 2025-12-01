@@ -71,8 +71,21 @@ explainer = load_shap_explainer()
 
 def shap_for_row(row):
     X = row[feature_cols].values.reshape(1, -1)
-    vals = explainer.shap_values(X)[1][0]  # class 1 only
-    return vals
+
+    shap_out = explainer.shap_values(X)
+
+    # Case 1 — SHAP returns [array(class0), array(class1)]
+    if isinstance(shap_out, list) and len(shap_out) > 1:
+        return shap_out[1][0]
+
+    # Case 2 — SHAP returns only one array
+    # (TreeExplainer with model_output="raw")
+    if isinstance(shap_out, np.ndarray):
+        return shap_out[0]
+
+    # Fallback
+    return shap_out[0][0]
+
 
 
 def shap_text_summary(row, shap_vals):
