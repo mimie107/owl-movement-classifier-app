@@ -221,19 +221,21 @@ elif page == "🔍 Prediction Explorer":
     st.text(shap_text_summary(row, shap_vals))
 
     # Waterfall plot
+      
     st.subheader("SHAP Waterfall Plot")
     vals = np.array(shap_vals, dtype=float)
 
-expl = shap.Explanation(
-    values=vals,
-    base_values=explainer.expected_value,
-    feature_names=feature_cols,
-    data=X
-)
+    expl = shap.Explanation(
+        values=vals,
+        base_values=explainer.expected_value,
+        feature_names=feature_cols,
+        data=X
+    )
 
-fig = plt.figure(figsize=(8, 6))
-shap.plots.waterfall(expl, show=False)
-st.pyplot(fig)
+    fig = plt.figure(figsize=(8, 6))
+    shap.plots.waterfall(expl, show=False)
+    st.pyplot(fig)
+
 
 
 
