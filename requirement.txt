@@ -1,0 +1,10 @@
+streamlit==1.31.1
+pandas
+numpy
+joblib
+matplotlib
+scikit-learn
+shap
+sentence-transformers
+transformers
+torch
