@@ -6,6 +6,8 @@ matplotlib
 scikit-learn
 shap
 sentence-transformers
-transformers
-torch==2.1.0 --extra-index-url https://download.pytorch.org/whl/cpu
+transformers==4.36.2
+accelerate
+
+
 
