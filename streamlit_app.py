@@ -71,20 +71,21 @@ explainer = load_shap_explainer()
 
 def shap_for_row(row):
     X = row[feature_cols].values.reshape(1, -1)
-
     shap_out = explainer.shap_values(X)
 
-    # Case 1 — SHAP returns [array(class0), array(class1)]
-    if isinstance(shap_out, list) and len(shap_out) > 1:
-        return shap_out[1][0]
+    # CASE 1 — SHAP returned a list (old binary/classic)
+    if isinstance(shap_out, list):
+        if len(shap_out) == 2:
+            return shap_out[1][0]     # class 1
+        return shap_out[0][0]         # fallback
 
-    # Case 2 — SHAP returns only one array
-    # (TreeExplainer with model_output="raw")
+    # CASE 2 — SHAP returned a single array (new SHAP for binary)
     if isinstance(shap_out, np.ndarray):
-        return shap_out[0]
+        return shap_out.reshape(-1)
 
-    # Fallback
-    return shap_out[0][0]
+    # Final fallback
+    return np.zeros(len(feature_cols))
+
 
 
 
@@ -221,9 +222,19 @@ elif page == "🔍 Prediction Explorer":
 
     # Waterfall plot
     st.subheader("SHAP Waterfall Plot")
-    expl = shap.Explanation(values=shap_vals, feature_names=feature_cols, features=X)
-    fig = shap.plots.waterfall(expl, show=False)
-    st.pyplot(fig)
+    vals = np.array(shap_vals, dtype=float)
+
+expl = shap.Explanation(
+    values=vals,
+    base_values=explainer.expected_value,
+    feature_names=feature_cols,
+    data=X
+)
+
+fig = plt.figure(figsize=(8, 6))
+shap.plots.waterfall(expl, show=False)
+st.pyplot(fig)
+
 
 
 
