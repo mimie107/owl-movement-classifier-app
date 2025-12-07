@@ -286,7 +286,45 @@ elif page == "📊 EDA Insights":
         Helps stakeholders understand how often the model predicts movement events.
         """)
 
-
+    # -------------------------------------------
+    # ⭐ Movement Probability Over Time (Per Owl)
+    # -------------------------------------------
+    st.subheader("📈 Movement Probability Over Time")
+    
+    if "timestamp" in df.columns:
+        
+        # Ask user to select an owl if owl_id exists
+        if "owl_id" in df.columns:
+            owl_ids = df["owl_id"].unique()
+            selected_owl = st.selectbox("Choose an Owl ID", owl_ids)
+            owl_df = df[df["owl_id"] == selected_owl].sort_values("timestamp")
+        else:
+            # If no owl_id, assume full dataset is 1 owl
+            owl_df = df.sort_values("timestamp")
+    
+        # Compute model probabilities
+        X = owl_df[FEATURES].values
+        movement_probs = clf.predict_proba(X)[:, 1]
+    
+        fig, ax = plt.subplots(figsize=(10, 4))
+        ax.plot(owl_df["timestamp"], movement_probs, color="darkred")
+        ax.axhline(0.30, linestyle="--", color="gray", label="Movement threshold (0.30)")
+        ax.set_ylabel("Predicted Movement Probability")
+        ax.set_xlabel("Time")
+        ax.set_title("Movement Probability Trend Over Time")
+        ax.legend()
+        st.pyplot(fig)
+    
+        st.markdown("""
+        **Insight:**
+        - This chart shows how your model interprets an owl’s behavior over time.
+        - Low/stable probabilities indicate resident behavior.
+        - Rising or spiking probabilities may indicate early signs of departure or directional movement.
+        - Sudden changes in SNR, noise, or lag features often cause these probability jumps.
+        """)
+    else:
+        st.info("Timestamp column not found — unable to plot movement probability over time.")
+    
 
 
 
