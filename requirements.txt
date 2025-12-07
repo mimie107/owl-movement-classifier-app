@@ -8,5 +8,6 @@ xgboost
 shap==0.44.0
 sentence-transformers==2.2.2
 transformers==4.36.2
+huggingface_hub==0.19.4
 accelerate
-torch>=2.0.0
+torch==2.1.0+cpu --extra-index-url https://download.pytorch.org/whl/cpu
