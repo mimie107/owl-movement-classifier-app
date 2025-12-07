@@ -4,11 +4,9 @@ numpy
 joblib
 matplotlib
 scikit-learn
-shap
-sentence-transformers
+xgboost
+shap==0.44.0
+sentence-transformers==2.2.2
 transformers==4.36.2
 accelerate
-
-
-
-
+torch>=2.0.0
