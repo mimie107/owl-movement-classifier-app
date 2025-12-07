@@ -144,8 +144,9 @@ movement behavior (e.g., signal disruption, increased noise, lag instability).
 # =============================================
 page = st.sidebar.radio(
     "Navigate",
-    ["🏠 Home", "🔍 Prediction Explorer", "🧠 RAG Explanation"]
+    ["🏠 Home", "📊 EDA Insights", "🔍 Prediction Explorer", "🧠 RAG Explanation"]
 )
+
 
 
 # =============================================
@@ -154,18 +155,143 @@ page = st.sidebar.radio(
 if page == "🏠 Home":
     st.header("Welcome")
     st.write("""
-This is the **final XGBoost-based movement classifier**, aligned with your notebook.
+Welcome to the **Owl Movement Classifier App**.
 
-Includes:
-- XGBoost predictions  
-- SHAP local explanations  
-- RAG scientific context  
-(No FLAN-T5 due to Streamlit Cloud restrictions)
+This tool helps us understand owl activity patterns at the Beaverhill Bird Observatory (BBO)
+using detection data collected from the automated radio-telemetry tower.
+
+### 🔍 What this app does
+We analyze the detection signals collected from tagged owls and:
+- Explore the dataset to understand detection patterns  
+- Use a machine learning model (XGBoost) to classify whether an owl is **moving/migrating (1)** or **staying local/resident (0)**
+- Explain *why* the model made a prediction using **SHAP feature interpretation**
+- Provide **contextual scientific explanations** using a small Retrieval-Augmented Generation (RAG) system
+
+### 🦉 Why this matters
+These insights help us answer key ecological questions, such as:
+- How long were owls detectable after tagging?
+- When are owls most active (foraging vs flight times)?
+- Do signal patterns suggest local movement or departure?
+- How do signal strength, noise, and detection patterns change before migration?
+
+### 📁 How to use the app
+1. Upload your processed dataset in the sidebar.  
+2. Navigate between pages:
+   - **EDA Insights:** Explore patterns in detection times, SNR, noise, and class balance  
+   - **Prediction Explorer:** View model predictions and SHAP explanations  
+   - **RAG Explanation:** Get scientific context behind movement behavior  
+
+This app brings together ecological knowledge and AI modeling to help us
+identify migration behavior and better understand owl movement patterns over time.
 """)
+
+# =============================================
+# PAGE 2 - EXPLORATORY DATA ANALYSIS (EDA)
+# =============================================
+elif page == "📊 EDA Insights":
+    st.header("📊 Exploratory Data Analysis — Owl Detectability Insights")
+
+    if uploaded is None:
+        st.warning("Upload your dataset to explore.")
+        st.stop()
+
+    # ---------------------------
+    # Dataset preview
+    # ---------------------------
+    st.subheader("Dataset Preview")
+    st.dataframe(df.head())
+
+    # ---------------------------
+    # Summary statistics
+    # ---------------------------
+    st.subheader("Summary Statistics")
+    st.write(df.describe())
+
+    # ---------------------------
+    # 1. Hour-of-day detection pattern
+    # ---------------------------
+    if "hour" in df.columns:
+        st.subheader("🕒 Detection Times (Hourly Pattern)")
+        fig, ax = plt.subplots(figsize=(8, 4))
+        ax.hist(df["hour"], bins=24, color="skyblue", edgecolor="black")
+        ax.set_xlabel("Hour of Day")
+        ax.set_ylabel("Detections")
+        ax.set_title("Distribution of Owl Detections by Hour")
+        st.pyplot(fig)
+        st.markdown("""
+        **Insight:**  
+        Peaks around dusk/night may indicate foraging or migratory departures.
+        """)
+
+    # ---------------------------
+    # 2. SNR distribution (distance proxy)
+    # ---------------------------
+    st.subheader("📡 Signal Strength (SNR) Distribution")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.hist(df["snr"], bins=40, color="lightgreen", edgecolor="black")
+    ax.set_xlabel("SNR")
+    ax.set_ylabel("Frequency")
+    ax.set_title("Distribution of Signal Strength (SNR)")
+    st.pyplot(fig)
+    st.markdown("""
+    **Insight:**  
+    Higher SNR suggests the owl was closer to the tower.  
+    Lower SNR values may indicate movement away from the detection site.
+    """)
+
+    # ---------------------------
+    # 3. Noise distribution
+    # ---------------------------
+    st.subheader("🌫 Noise Level Distribution")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    ax.hist(df["noise"], bins=40, color="salmon", edgecolor="black")
+    ax.set_xlabel("Noise")
+    ax.set_ylabel("Frequency")
+    ax.set_title("Distribution of Noise Levels")
+    st.pyplot(fig)
+    st.markdown("""
+    **Insight:**  
+    Rising noise levels often precede drops in SNR and can indicate movement or environmental interference.
+    """)
+
+    # ---------------------------
+    # 4. SNR over time (movement clue)
+    # ---------------------------
+    if "timestamp" in df.columns:
+        st.subheader("📈 SNR Trend Over Time")
+        fig, ax = plt.subplots(figsize=(10, 4))
+        ax.plot(df["timestamp"], df["snr"], color="purple")
+        ax.set_xlabel("Time")
+        ax.set_ylabel("SNR")
+        ax.set_title("SNR Over Time (Distance Proxy)")
+        st.pyplot(fig)
+        st.markdown("""
+        **Insight:**  
+        Sharp drops in SNR over time may indicate departure from the BBO area.
+        """)
+
+    # ---------------------------
+    # 5. Movement class distribution 
+    # ---------------------------
+    if "movement_class" in df.columns:
+        st.subheader("🦉 Movement vs Resident — Class Balance")
+        fig, ax = plt.subplots(figsize=(6, 4))
+        df["movement_class"].value_counts().plot(kind="bar", color=["orange", "blue"], ax=ax)
+        ax.set_xticklabels(["Resident (0)", "Movement (1)"], rotation=0)
+        ax.set_ylabel("Count")
+        ax.set_title("Distribution of Predicted Movement Classes")
+        st.pyplot(fig)
+        st.markdown("""
+        **Insight:**  
+        Helps stakeholders understand how often the model predicts movement events.
+        """)
+
+
+
 
 
 # =============================================
-# PAGE 2 — PREDICTION EXPLORER
+# PAGE 3 — PREDICTION EXPLORER
 # =============================================
 elif page == "🔍 Prediction Explorer":
     st.header("🔍 Prediction Explorer")
@@ -200,7 +326,7 @@ elif page == "🔍 Prediction Explorer":
 
 
 # =============================================
-# PAGE 3 — RAG EXPLANATION
+# PAGE 4 — RAG EXPLANATION
 # =============================================
 elif page == "🧠 RAG Explanation":
     st.header("🧠 RAG Explanation")
