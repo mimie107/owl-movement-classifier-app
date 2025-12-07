@@ -16,7 +16,7 @@ st.title("🦉 Owl Movement Classifier — XGBoost + SHAP + RAG")
 # =============================================
 @st.cache_resource
 def load_model():
-    return joblib.load("xgb_classifier.pkl")
+    return joblib.load("classifier_model.pkl")
 
 clf = load_model()
 
